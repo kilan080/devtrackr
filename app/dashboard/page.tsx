@@ -16,6 +16,9 @@ export default function DashboardPage() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
+  const [selectedProject, setSelectedProject] = useState<any>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editDescription, setEditDescription] = useState("");
 
   // Fetch projects for the current user
   async function fetchProjects() {
@@ -135,20 +138,100 @@ export default function DashboardPage() {
                     Active
                   </span>
                 </div>
-                <button
-                  onClick={() => handleDelete(project.id)}
-                  className="bg-red-500 text-red-900 px-2 py-1 rounded hover:text-red-300 text-xs"
-                >
-                  Delete
-                </button>
+                <div className="flex justify-between mt-2">
+                  <button
+                    onClick={() => handleDelete(project.id)}
+                    className="bg-red-500 text-red-900 px-2 py-1 rounded hover:text-red-300 text-xs"
+                  >
+                    Delete
+                  </button>
+                  <button
+                    onClick={() => {
+                      setSelectedProject(project);
+                      setEditDescription(project.description);
+                      setEditTitle(project.title);
+                    }}
+                    className="bg-green-500 text-white px-2 py-1 rounded hover:text-green-300 text-xs"
+                  >
+                    Edit
+                  </button>
+                </div>
               </div>
             ))
           ) : (
             <p className="text-zinc-500 col-span-full text-center">
-              No projects yet. Create one above 🚀
+              No projects yet, Create one below.
             </p>
           )}
         </div>
+        {/* pop-up edit */}
+
+        {selectedProject && (
+          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+            <div className="bg-zinc-900 p-6 rounded-xl w-full max-w-md space-y-4">
+              <h2 className="text-lg font-semibold">Edit Project</h2>
+
+              <input
+                value={editTitle}
+                onChange={(e) => setEditTitle(e.target.value)}
+                className="w-full p-2 rounded bg-zinc-800"
+              />
+
+              <textarea
+                value={editDescription}
+                onChange={(e) => setEditDescription(e.target.value)}
+                className="w-full p-2 rounded bg-zinc-800"
+              />
+
+              <div className="flex justify-between">
+                <button
+                  onClick={() => setSelectedProject(null)}
+                  className="text-zinc-400 cursor-pointer"
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="button"
+                  onClick={async () => {
+                    console.log("click saved");
+                    const res = await fetch(
+                      `/api/projects/${selectedProject.id}`,
+                      {
+                        method: "PATCH",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                          title: editTitle,
+                          description: editDescription,
+                        }),
+                      },
+                    );
+
+                    const data = await res.json();
+
+                    if (!res.ok) {
+                      console.error(data.error);
+                      return;
+                    }
+
+                    if (!data?.project) return;
+
+                    setProjects((prev: any) =>
+                      prev.map((p: any) =>
+                        p.id === selectedProject.id ? data.project : p,
+                      ),
+                    );
+
+                    setSelectedProject(null);
+                  }}
+                  className="bg-green-900 px-4 py-2 rounded cursor-pointer"
+                >
+                  Save
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
