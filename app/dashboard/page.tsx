@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, FormEvent } from "react";
-// import { currentUser } from "@clerk/nextjs";
+import Link from "next/link";
 import toast from "react-hot-toast";
 
 type Project = {
@@ -121,13 +121,19 @@ export default function DashboardPage() {
             projects.map((project) => (
               <div
                 key={project.id}
-                className="bg-zinc-900 text-white p-5 rounded-2xl shadow-lg border border-zinc-800 hover:border-blue-500 transition"
+                className="bg-zinc-900 text-white p-5 rounded-2xl shadow-lg border cursor-pointer border-zinc-800 hover:border-blue-500 transition"
               >
-                <h2 className="text-xl font-semibold mb-2">{project.title}</h2>
+                <Link key={project.id} href={`/projects/${project.id}`}>
+                  <div className="cursor-pointer">
+                    <h2 className="text-xl font-semibold mb-2">
+                      {project.title}
+                    </h2>
 
-                <p className="text-zinc-400 text-sm mb-4">
-                  {project.description || "No description"}
-                </p>
+                    <p className="text-zinc-400 text-sm mb-4">
+                      {project.description || "No description"}
+                    </p>
+                  </div>
+                </Link>
 
                 <div className="flex justify-between items-center text-xs text-zinc-500">
                   <span>

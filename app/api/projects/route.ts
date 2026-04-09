@@ -2,7 +2,6 @@ import { currentUser } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
-import { error } from "console";
 
 
 export async function POST(req: NextRequest) {
@@ -45,10 +44,7 @@ export async function POST(req: NextRequest) {
             },
         });
 
-        return NextResponse.json({
-            project, 
-            status: 201
-        });
+        return NextResponse.json({ project }, { status: 201 });
 
     } catch (error) {
         console.error("[POST /api/projects]", error);
@@ -80,7 +76,7 @@ export async function GET() {
             where: { userId: dbUser.id },
             orderBy: { createdAt: "desc" }
         });
-        return NextResponse.json(projects);
+        return NextResponse.json({ projects });
     } catch (error) {
         console.error("[GET /api/projects]", error);
         return Response.json({
