@@ -6,6 +6,33 @@ export default function ProjectClient({ project }: any) {
   const [activities, setActivities] = useState(project.activities || []);
   const [content, setContent] = useState("");
 
+  const groupedActivities = activities.reduce((acc: any, activity: any) => {
+    const date = new Date(activity.createdAt).toLocaleDateString(undefined, {
+      weekday: "long",
+      month: "short",
+      day: "numeric",
+    });
+
+    if (!acc[date]) {
+      acc[date] = [];
+    }
+
+    acc[date].push(activity);
+    return acc;
+  }, {});
+
+  const handleDelete = async (id: string) => {
+    try {
+      await fetch(`/api/activities/${id}`, {
+        method: "DELETE",
+      });
+
+      setActivities((prev: any) => prev.filter((a: any) => a.id !== id));
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-zinc-950 text-white px-4 py-10">
       <div className="max-w-3xl mx-auto bg-zinc-900 p-6 rounded-2xl border border-zinc-800 shadow-lg">
@@ -54,23 +81,58 @@ export default function ProjectClient({ project }: any) {
           </button>
         </form>
 
-        {/* ACTIVITIES */}
-        <div className="mt-8 space-y-4">
-          <h3 className="text-lg font-semibold">Activity</h3>
+        {activities.length === 0 && (
+          <p className="text-zinc-500 mt-8">No updates yet</p>
+        )}
 
-          {activities.length === 0 ? (
-            <p className="text-zinc-500">No updates yet</p>
-          ) : (
-            activities.map((activity: any) => (
-              <div key={activity.id} className="bg-zinc-800 p-3 rounded-lg">
-                <p>{activity.content}</p>
-                <span className="text-xs text-zinc-500">
-                  {new Date(activity.createdAt).toLocaleString()}
-                </span>
-              </div>
-            ))
-          )}
-        </div>
+        {/* TIMELINE */}
+        {activities.length > 0 && (
+          <div className="mt-10">
+            <h3 className="text-lg font-semibold mb-6">Activity Timeline</h3>
+
+            <div className="relative border-l border-zinc-700 pl-6 space-y-10">
+              {Object.entries(groupedActivities)
+                .sort(
+                  ([a], [b]) => new Date(b).getTime() - new Date(a).getTime(),
+                )
+                .map(([date, items]: any) => (
+                  <div key={date}>
+                    {/* DATE */}
+                    <p className="text-sm text-zinc-400 mb-4">{date}</p>
+
+                    {/* ACTIVITIES */}
+                    <div className="space-y-4">
+                      {items.map((activity: any) => (
+                        <div key={activity.id} className="relative">
+                          {/* DOT */}
+                          <span className="absolute -left-[31px] top-2 w-3 h-3 bg-blue-500 rounded-full"></span>
+
+                          {/* CARD */}
+                          <div className="group bg-zinc-800 p-4 rounded-xl border border-zinc-700 hover:border-blue-500 transition relative">
+                            {/* DELETE BUTTON (hidden until hover) */}
+                            <button
+                              onClick={() => handleDelete(activity.id)}
+                              className="absolute top-2 right-2 text-xs bg-red-500/20 text-red-400 px-2 py-1 rounded opacity-0 cursor-pointer group-hover:opacity-100 transition"
+                            >
+                              Delete
+                            </button>
+
+                            <p className="text-sm">{activity.content}</p>
+
+                            <span className="text-xs text-zinc-500">
+                              {new Date(
+                                activity.createdAt,
+                              ).toLocaleTimeString()}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+            </div>
+          </div>
+        )}
 
         {/* FOOTER */}
         <div className="flex justify-between text-sm text-zinc-500 border-t border-zinc-800 pt-4 mt-6">

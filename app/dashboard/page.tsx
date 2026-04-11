@@ -36,7 +36,7 @@ export default function DashboardPage() {
     fetchProjects();
   }, []);
 
-  // Handle form submission
+  // form submission
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     if (!title.trim()) return toast.error("Title is required");
@@ -88,7 +88,7 @@ export default function DashboardPage() {
       <div className="max-w-5xl mx-auto">
         <h1 className="text-3xl font-bold mb-6">Your Projects</h1>
 
-        {/* Create Project Form */}
+        {/* Project Form */}
         <form
           onSubmit={handleSubmit}
           className="mb-8 p-6 bg-zinc-900 rounded-2xl shadow border border-zinc-800 space-y-4"
