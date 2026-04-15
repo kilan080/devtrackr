@@ -22,6 +22,9 @@ model Project {
   description String?
   createdAt   DateTime   @default(now())
 
+  progress    Int        @default(0)   //0 - 100
+  status      String     @default("ACTIVE")  // ACTIVE | COMPLETED
+
   userId      String
   user        User       @relation(fields: [userId], references: [id])
 

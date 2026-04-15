@@ -18,6 +18,28 @@ export async function POST(req: Request) {
       },
     });
 
+    const count = await prisma.activity.count({
+      where: { projectId }
+    }) 
+
+    let progress = 0;
+
+    if(count === 0) progress = 0;
+    else if(count <= 2) progress = 20;
+    else if(count <= 5) progress = 40;
+    else if(count <= 8) progress = 60;
+    else if(count <= 12) progress = 80;
+    else progress = 100
+
+
+    await prisma.project.update({
+      where: {  id: projectId },
+      data: { 
+        progress,
+        status: progress === 100 ?  "COMPLETED" : "ACTIVE",
+       },
+    });
+
     return Response.json({ activity });
   } catch (error) {
     console.error(error);

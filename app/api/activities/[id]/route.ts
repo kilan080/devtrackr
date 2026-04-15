@@ -1,19 +1,52 @@
 import { prisma } from "@/lib/prisma";
 
-export async function DELETE(req: Request, { params } : {params: Promise<{ id: string }>} ) {
-    try {
-        const { id } = await params;
+export async function DELETE(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
 
-        await params.activity.delete({
-            where: { id },
-        });
+    await prisma.activity.delete({
+      where: { id },
+    });
 
-        return Response.json({ sucess: true })
-    } catch (error) {
-        console.error("Delete activity error:", error);
-        return Response.json(
-            { error: "Failed to delete activity" },
-            { status: 500 }
-        )
+    return Response.json({ success: true });
+  } catch (error) {
+    console.error("DELETE ACTIVITY ERROR:", error);
+    return Response.json(
+      { error: "Failed to delete activity" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PATCH(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const { content } = await req.json();
+
+    if (!content || typeof content !== "string") {
+      return Response.json(
+        { error: "Content is required" },
+        { status: 400 }
+      );
     }
+
+    const updated = await prisma.activity.update({
+      where: { id },
+      data: { content },
+    });
+
+    return Response.json({ activity: updated });
+  } catch (error) {
+    console.error("PATCH ACTIVITY ERROR:", error);
+    return Response.json(
+      { error: "Failed to update activity" },
+      { status: 500 }
+    );
+  }
 }
