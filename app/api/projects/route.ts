@@ -74,6 +74,9 @@ export async function GET() {
 
         const projects = await prisma.project.findMany({
             where: { userId: dbUser.id },
+            include: {
+                user: true,
+            },
             orderBy: { createdAt: "desc" }
         });
         return NextResponse.json({ projects });

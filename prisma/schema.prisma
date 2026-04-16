@@ -12,6 +12,9 @@ model User {
   clerkId   String   @unique
   email     String   @unique
   name      String?
+
+  username  String   @unique
+
   projects  Project[]
   createdAt DateTime @default(now())
 }

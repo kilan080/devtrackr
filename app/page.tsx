@@ -5,6 +5,13 @@ import { SignInButton, SignUpButton, UserButton, useUser } from "@clerk/nextjs";
 export default function Home() {
   const { isSignedIn } = useUser();
 
+  function generateUsername(name: string, email: string) {
+    if (name) {
+      return name.toLowerCase().replace(/\s+/g, "");
+    }
+    return email.split("@")[0].toLowerCase();
+  }
+
   return (
     <div className="min-h-screen bg-zinc-950 text-white px-4 py-6 flex flex-col">
       {/* Header */}

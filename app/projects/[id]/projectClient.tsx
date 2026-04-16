@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import ProjectInsights from "./projectInsights";
+import ProjectHeatmap from "./projectHeatMap";
 
 export default function ProjectClient({ project }: any) {
   const [activities, setActivities] = useState(project.activities || []);
@@ -75,6 +76,8 @@ export default function ProjectClient({ project }: any) {
           {project.description || "No description provided"}
         </p>
         <ProjectInsights project={project} />
+
+        <ProjectHeatmap activities={activities} />
 
         {/* FORM */}
         <form

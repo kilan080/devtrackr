@@ -12,6 +12,9 @@ type Project = {
   createdAt: string;
   progress?: number;
   status?: string;
+  user: {
+    username: string;
+  };
 };
 
 export default function DashboardPage() {
@@ -31,6 +34,7 @@ export default function DashboardPage() {
       const res = await fetch("/api/projects");
       const data = await res.json();
 
+      console.log(projects);
       if (Array.isArray(data)) {
         setProjects(data);
       } else if (Array.isArray(data.projects)) {
@@ -221,11 +225,20 @@ export default function DashboardPage() {
                     whileTap={{ scale: 0.9 }}
                     whileHover={{ scale: 1.1 }}
                     onClick={() => handleDelete(project.id)}
-                    className="text-red-400 text-xs"
+                    className="text-red-400 text-xs cursor-pointer"
                   >
                     Delete
                   </motion.button>
-
+                  <button
+                    onClick={() => {
+                      const url = `${window.location.origin}/p/${project.user.username}/${project.id}`;
+                      navigator.clipboard.writeText(url);
+                      toast.success("Link copied!");
+                    }}
+                    className="text-xs text-blue-400 hover:underline cursor-pointer"
+                  >
+                    Share
+                  </button>
                   <motion.button
                     whileTap={{ scale: 0.9 }}
                     whileHover={{ scale: 1.1 }}
@@ -236,7 +249,7 @@ export default function DashboardPage() {
                       setEditProgress(project.progress || 0);
                       setEditStatus(project.status || "ACTIVE");
                     }}
-                    className="text-green-400 text-xs"
+                    className="text-green-400 text-xs cursor-pointer"
                   >
                     Edit
                   </motion.button>
