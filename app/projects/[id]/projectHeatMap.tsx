@@ -2,7 +2,7 @@
 
 type Activity = {
   id: string;
-  createdAt: string;
+  createdAt: Date | string;
 };
 
 export default function ProjectHeatmap({

@@ -4,13 +4,30 @@ import { useState } from "react";
 import ProjectInsights from "./projectInsights";
 import ProjectHeatmap from "./projectHeatMap";
 
-export default function ProjectClient({ project }: any) {
-  const [activities, setActivities] = useState(project.activities || []);
+export interface Activity {
+  id: string;
+  content: string;
+  createdAt: string | Date;
+}
+
+export interface Project {
+  id: string;
+  title: string;
+  description?: string | null;
+  createdAt: string | Date;
+  progress?: number;
+  status?: string;
+  userId?: string;
+  activities?: Activity[];
+}
+
+export default function ProjectClient({ project }: { project: Project }) {
+  const [activities, setActivities] = useState<Activity[]>(project.activities || []);
   const [content, setContent] = useState("");
-  const [editingId, setEditingId] = useState<String | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [editContent, setEditContent] = useState("");
 
-  const groupedActivities = activities.reduce((acc: any, activity: any) => {
+  const groupedActivities = activities.reduce((acc: Record<string, Activity[]>, activity: Activity) => {
     const date = new Date(activity.createdAt).toLocaleDateString(undefined, {
       weekday: "long",
       month: "short",
@@ -23,7 +40,7 @@ export default function ProjectClient({ project }: any) {
 
     acc[date].push(activity);
     return acc;
-  }, {});
+  }, {} as Record<string, Activity[]>);
 
   const handleDelete = async (id: string) => {
     try {
@@ -31,13 +48,13 @@ export default function ProjectClient({ project }: any) {
         method: "DELETE",
       });
 
-      setActivities((prev: any) => prev.filter((a: any) => a.id !== id));
+      setActivities((prev) => prev.filter((a) => a.id !== id));
     } catch (error) {
       console.error(error);
     }
   };
 
-  const handleEdit = (activity: any) => {
+  const handleEdit = (activity: Activity) => {
     setEditingId(activity.id);
     setEditContent(activity.content);
   };
@@ -55,8 +72,8 @@ export default function ProjectClient({ project }: any) {
       const data = await res.json();
 
       if (data.activity) {
-        setActivities((prev: any) =>
-          prev.map((a: any) => (a.id === id ? data.activity : a)),
+        setActivities((prev) =>
+          prev.map((a) => (a.id === id ? data.activity : a)),
         );
 
         setEditingId(null);
@@ -100,7 +117,7 @@ export default function ProjectClient({ project }: any) {
             const data = await res.json();
 
             if (data.activity) {
-              setActivities((prev: any) => [data.activity, ...prev]);
+              setActivities((prev) => [data.activity, ...prev]);
               setContent("");
 
               window.location.reload();
@@ -134,14 +151,14 @@ export default function ProjectClient({ project }: any) {
                 .sort(
                   ([a], [b]) => new Date(b).getTime() - new Date(a).getTime(),
                 )
-                .map(([date, items]: any) => (
+                .map(([date, items]) => (
                   <div key={date}>
                     {/* DATE */}
                     <p className="text-sm text-zinc-400 mb-4">{date}</p>
 
                     {/* ACTIVITIES */}
                     <div className="space-y-4">
-                      {items.map((activity: any) => (
+                      {items.map((activity) => (
                         <div key={activity.id} className="relative">
                           {/* DOT */}
                           <span className="absolute -left-[31px] top-2 w-3 h-3 bg-blue-500 rounded-full"></span>

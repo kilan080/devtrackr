@@ -1,13 +1,14 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { Activity, Project } from "./projectClient";
 
-function getDay(date: string) {
+function getDay(date: string | Date) {
   const d = new Date(date);
   return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
 }
 
-function calculateStreak(activities: any[]) {
+function calculateStreak(activities: Activity[]) {
   if (!activities.length) return 0;
 
   const days = [...new Set(activities.map((a) => getDay(a.createdAt)))].sort(
@@ -29,7 +30,7 @@ function calculateStreak(activities: any[]) {
   return streak;
 }
 
-function getSmartMessage(streak: number, lastActivity?: any) {
+function getSmartMessage(streak: number, lastActivity?: Activity) {
   if (!lastActivity) return "Start logging updates to build momentum";
 
   const hoursAgo =
@@ -43,7 +44,7 @@ function getSmartMessage(streak: number, lastActivity?: any) {
   return "Good progress, keep pushing 💪";
 }
 
-export default function ProjectInsights({ project }: any) {
+export default function ProjectInsights({ project }: { project: Project & { progress?: number } }) {
   const activities = project.activities || [];
 
   const totalActivities = activities.length;

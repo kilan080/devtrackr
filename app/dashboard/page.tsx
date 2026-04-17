@@ -28,6 +28,7 @@ export default function DashboardPage() {
   const [editDescription, setEditDescription] = useState("");
   const [editProgress, setEditProgress] = useState(0);
   const [editStatus, setEditStatus] = useState("ACTIVE");
+  const [username, setUsername] = useState("");
 
   async function fetchProjects() {
     try {
@@ -99,6 +100,17 @@ export default function DashboardPage() {
     }
   }
 
+  
+
+  useEffect(() => {
+    async function getUser() {
+      const res = await fetch("/api/me");
+      const data = await res.json();
+      setUsername(data.username);
+    }
+    getUser();
+  }, []);
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -106,6 +118,7 @@ export default function DashboardPage() {
       className="min-h-screen bg-zinc-950 text-white px-4 py-10"
     >
       <div className="max-w-5xl mx-auto">
+        <div className="flex justify-between items-center">
         <motion.h1
           initial={{ y: -10, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
@@ -113,6 +126,16 @@ export default function DashboardPage() {
         >
           Your Projects
         </motion.h1>
+
+        {projects[0]?.user?.username && (
+          <Link
+            href={`/p/${projects[0].user.username}`}
+            className="text-sm text-white px-2 py-2 mb-6 rounded bg-blue-600"
+          >
+            View Profile
+          </Link>
+        )}
+        </div>
 
         {/* FORM */}
         <motion.form

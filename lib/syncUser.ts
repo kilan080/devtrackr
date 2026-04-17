@@ -1,9 +1,10 @@
 import { prisma } from '@/lib/prisma';
 
 type UserData = {
-    clerkId : string,
+    clerkId: string,
     email: string,
     name?: string
+    username: string
 };
 
 export async function syncUser(user: UserData) {
@@ -11,13 +12,14 @@ export async function syncUser(user: UserData) {
         where: { clerkId: user.clerkId },
     });
 
-    if(existingUser) return existingUser;
+    if (existingUser) return existingUser;
 
     return await prisma.user.create({
         data: {
             clerkId: user.clerkId,
             email: user.email,
-            name: user.name
+            name: user.name,
+            username: user.username
         },
     });
 }
