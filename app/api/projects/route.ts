@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
     try {
         const { userId: clerkId } = await auth();
 
-        if(!clerkId) {
+        if (!clerkId) {
             return NextResponse.json({
                 error: "Unauthorized",
                 status: 401
@@ -18,25 +18,36 @@ export async function POST(req: NextRequest) {
         const body = await req.json();
         const { title, description } = body;
 
-        if(!title || typeof title !== "string") {
+        if (!title || typeof title !== "string") {
             return NextResponse.json({
                 error: "Title is required",
                 status: 400
             });
         }
 
-        const dbUser = await prisma.user.findUnique({
+        let dbUser = await prisma.user.findUnique({
             where: { clerkId },
         });
 
-        if(!dbUser) {
+        if (!dbUser) {
+            const user = await currentUser();
+
+            dbUser = await prisma.user.create({
+                data: {
+                    clerkId,
+                    email: user?.emailAddresses?.[0].emailAddress || "",
+                    name: user?.fullName || "",
+                    username: user?.username || user?.emailAddresses[0]?.emailAddress.split("@")[0] || "",
+                }
+            })
+
             return NextResponse.json({
                 error: "User not found in DB",
                 status: 404
             });
         }
 
-        const project =  await prisma.project.create({
+        const project = await prisma.project.create({
             data: {
                 title,
                 description: description || "",
@@ -48,15 +59,15 @@ export async function POST(req: NextRequest) {
 
     } catch (error) {
         console.error("[POST /api/projects]", error);
-        return Response.json( {error: 'Internal server Error'}, {status: 500})
+        return Response.json({ error: 'Internal server Error' }, { status: 500 })
     }
-} 
+}
 
 export async function GET() {
     try {
         const { userId: clerkId } = await auth();
 
-        if(!clerkId) return NextResponse.json({
+        if (!clerkId) return NextResponse.json({
             error: "Unauthorized",
             status: 401
         });
@@ -65,7 +76,7 @@ export async function GET() {
             where: { clerkId }
         });
 
-        if(!dbUser) {
+        if (!dbUser) {
             return NextResponse.json({
                 error: "DB user not found",
                 status: 404
@@ -97,7 +108,7 @@ export async function DELETE(req: Request) {
             where: { id },
         });
 
-        return Response.json({ 
+        return Response.json({
             success: true,
             status: 200
         });

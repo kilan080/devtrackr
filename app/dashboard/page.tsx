@@ -78,6 +78,12 @@ export default function DashboardPage() {
         setDescription("");
         toast.success("Project created!");
       }
+      if(!res.ok) {
+        const err =  await res.json();
+        console.log(err)
+        toast.error(err.error || "Failed to create project")
+        return;
+      }
     } catch (err) {
       console.error(err);
       toast.error("Failed to create project");
