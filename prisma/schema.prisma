@@ -32,6 +32,8 @@ model Project {
   user        User       @relation(fields: [userId], references: [id])
 
   activities  Activity[]   
+
+  @@unique([title, userId])
 }
 
 model Activity {

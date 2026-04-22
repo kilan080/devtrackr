@@ -29,6 +29,7 @@ export default function DashboardPage() {
   const [editProgress, setEditProgress] = useState(0);
   const [editStatus, setEditStatus] = useState("ACTIVE");
   const [username, setUsername] = useState("");
+  const [confirmingId, setConfirmingId] = useState<string | null>(null);
 
   async function fetchProjects() {
     try {
@@ -78,10 +79,9 @@ export default function DashboardPage() {
         setDescription("");
         toast.success("Project created!");
       }
+      // const data = await res.json();
       if(!res.ok) {
-        const err =  await res.json();
-        console.log(err)
-        toast.error(err.error || "Failed to create project")
+        toast.error(newProject.error || "Something went wrong");
         return;
       }
     } catch (err) {
@@ -249,15 +249,26 @@ export default function DashboardPage() {
                 </div>
 
                 {/* ACTIONS */}
-                <div className="flex justify-between mt-3">
+                {confirmingId === project.id ? (
+                  <div className="flex items-center gap-1">
+                    <button className="text-xs bg-red-500 cursor-pointer text-white px-2 py-1 rounded" onClick={() => { handleDelete(project.id) }}>
+                      Confirm
+                    </button>
+                    <button className="text-xs bg-green-500 cursor-pointer text-white px-2 py-1 rounded" onClick={() =>setConfirmingId(null)}>
+                      Cancel
+                    </button>
+                  </div>
+                ) : (
                   <motion.button
                     whileTap={{ scale: 0.9 }}
                     whileHover={{ scale: 1.1 }}
-                    onClick={() => handleDelete(project.id)}
+                    onClick={() => setConfirmingId(project.id)}
                     className="text-red-400 text-xs cursor-pointer"
                   >
                     Delete
                   </motion.button>
+                )}
+                <div className="flex justify-between mt-3">
                   <button
                     onClick={() => {
                       const url = `${window.location.origin}/p/${project.user.username}/${project.id}`;

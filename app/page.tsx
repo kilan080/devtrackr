@@ -21,8 +21,17 @@ export default function Home() {
         <div className="flex items-center gap-4 text-sm">
           {!isSignedIn && (
             <>
-              <SignInButton mode="modal">Sign In</SignInButton>
-              <SignUpButton mode="modal">Get Started</SignUpButton>
+              <SignInButton mode="modal">
+                <button className="cursor-pointer px-4 py-2 bg-zinc-800 rounded-lg hover:bg-zinc-700 transition">
+                  Sign In
+                </button>
+              </SignInButton>
+
+              <SignUpButton mode="modal">
+                <button className="cursor-pointer px-4 py-2 bg-blue-600 rounded-lg hover:bg-blue-700 transition">
+                  Get Started
+                </button>
+              </SignUpButton>
             </>
           )}
 
@@ -54,9 +63,17 @@ export default function Home() {
         <div className="flex flex-col sm:flex-row gap-4">
           {!isSignedIn && (
             <>
-              <SignUpButton mode="modal">Start Building</SignUpButton>
+              <SignUpButton mode="modal">
+                <button className="cursor-pointer px-4 py-2 bg-blue-600 rounded-lg hover:bg-blue-700 transition">
+                  Start Building
+                </button>
+              </SignUpButton>
 
-              <SignInButton mode="modal">Already have an account?</SignInButton>
+              <SignInButton mode="modal">
+                <button className="cursor-pointer px-4 py-2 bg-zinc-800 rounded-lg hover:bg-zinc-700 transition">
+                  Already have an account?
+                </button>
+              </SignInButton>
             </>
           )}
         </div>

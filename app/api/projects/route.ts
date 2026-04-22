@@ -1,6 +1,7 @@
 import { currentUser } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 
 
@@ -9,57 +10,71 @@ export async function POST(req: NextRequest) {
         const { userId: clerkId } = await auth();
 
         if (!clerkId) {
-            return NextResponse.json({
-                error: "Unauthorized",
-                status: 401
-            })
-        };
-
-        const body = await req.json();
-        const { title, description } = body;
-
-        if (!title || typeof title !== "string") {
-            return NextResponse.json({
-                error: "Title is required",
-                status: 400
-            });
+            return NextResponse.json(
+                { error: "Unauthorized" },
+                { status: 401 }
+            );
         }
 
+        const { title, description } = await req.json();
+
+        if (!title || typeof title !== "string") {
+            return NextResponse.json(
+                { error: "Title is required" },
+                { status: 400 }
+            );
+        }
+
+        //  Find user
         let dbUser = await prisma.user.findUnique({
             where: { clerkId },
         });
 
+        // Create user if not exists
         if (!dbUser) {
             const user = await currentUser();
 
             dbUser = await prisma.user.create({
                 data: {
                     clerkId,
-                    email: user?.emailAddresses?.[0].emailAddress || "",
+                    email: user?.emailAddresses?.[0]?.emailAddress || "",
                     name: user?.fullName || "",
-                    username: user?.username || user?.emailAddresses[0]?.emailAddress.split("@")[0] || "",
-                }
-            })
-
-            return NextResponse.json({
-                error: "User not found in DB",
-                status: 404
+                    username:
+                        user?.username ||
+                        user?.emailAddresses?.[0]?.emailAddress.split("@")[0] ||
+                        "",
+                },
             });
         }
 
+        //  Create project
         const project = await prisma.project.create({
             data: {
-                title,
+                title: title.trim(),
                 description: description || "",
-                userId: dbUser.id
+                userId: dbUser.id,
             },
         });
 
         return NextResponse.json({ project }, { status: 201 });
 
     } catch (error) {
+        //  Handle duplicate title
+        if (
+            error instanceof Prisma.PrismaClientKnownRequestError &&
+            error.code === "P2002"
+        ) {
+            return NextResponse.json(
+                { error: "You already have a project with this title" },
+                { status: 400 }
+            );
+        }
+
         console.error("[POST /api/projects]", error);
-        return Response.json({ error: 'Internal server Error' }, { status: 500 })
+        return NextResponse.json(
+            { error: "Internal Server Error" },
+            { status: 500 }
+        );
     }
 }
 

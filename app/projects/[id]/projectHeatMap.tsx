@@ -1,5 +1,7 @@
 "use client";
 
+import { useMemo } from "react";
+
 type Activity = {
   id: string;
   createdAt: Date | string;
@@ -11,22 +13,35 @@ export default function ProjectHeatmap({
   activities: Activity[];
 }) {
   // Get last 30 days
-  const days = Array.from({ length: 30 })
-    .map((_, i) => {
-      const date = new Date();
-      date.setDate(date.getDate() - i);
-      return date;
-    })
-    .reverse();
-
+  const days = useMemo(() => {
+    return Array.from({ length: 30 }, (_, i) => {
+      const d = new Date();
+      d.setDate(d.getDate() - (29 - i));
+      return d;
+    });
+  }, []);
   // Count activities per day
-  const activityMap: Record<string, number> = {};
+  const activityMap = useMemo(() => {
+    const map: Record<string, number> = {};
+    activities.forEach((activity) => {
+      const date = new Date(activity.createdAt).toDateString();
+      map[date] = (map[date] || 0) + 1;
+    });
+    return map;
+  }, [activities]);
 
-  activities.forEach((activity) => {
-    const date = new Date(activity.createdAt).toDateString();
-
-    activityMap[date] = (activityMap[date] || 0) + 1;
-  });
+    if (!activities || activities.length === 0) {
+      return (
+        <div className="mt-8">
+          <h3 className="text-lg font-semibold mb-4">Activity Heatmap</h3>
+          <div className="grid grid-cols-10 gap-2">
+            {Array.from({ length: 30 }).map((_, i) => (
+              <div key={i} className="w-full h-8 rounded bg-zinc-800 animate-pulse" />
+            ))}
+          </div>
+        </div>
+      );
+    }
 
   return (
     <div className="mt-8">

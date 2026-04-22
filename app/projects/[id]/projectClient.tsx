@@ -26,6 +26,8 @@ export default function ProjectClient({ project }: { project: Project }) {
   const [content, setContent] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editContent, setEditContent] = useState("");
+  const [confirmingId, setConfirmingId] = useState<string | null>(null);
+  const [adding, setAdding] = useState(false);
 
   const groupedActivities = activities.reduce((acc: Record<string, Activity[]>, activity: Activity) => {
     const date = new Date(activity.createdAt).toLocaleDateString(undefined, {
@@ -102,26 +104,33 @@ export default function ProjectClient({ project }: { project: Project }) {
             e.preventDefault();
 
             if (!content.trim()) return;
-
-            const res = await fetch("/api/activities", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                content,
-                projectId: project.id,
-              }),
-            });
-
-            const data = await res.json();
-
-            if (data.activity) {
-              setActivities((prev) => [data.activity, ...prev]);
-              setContent("");
-
-              window.location.reload();
+            try {
+              setAdding(true);
+              const res = await fetch("/api/activities", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  content,
+                  projectId: project.id,
+                }),
+              });
+  
+              const data = await res.json();
+              if (data.activity) {
+                setActivities((prev) => [data.activity, ...prev]);
+                setContent("");
+  
+                window.location.reload();
+              }
+            } catch (error) {
+              console.error(error);
+            } finally {
+              setAdding(false);
             }
+
+
           }}
           className="mt-6 space-y-3"
         >
@@ -132,8 +141,18 @@ export default function ProjectClient({ project }: { project: Project }) {
             className="w-full p-3 rounded bg-zinc-800 text-white"
           />
 
-          <button className="bg-blue-600 px-4 py-2 rounded cursor-pointer">
-            Add Update
+          <button
+            disabled={adding}
+            className="bg-blue-600 px-4 py-2 rounded cursor-pointer flex items-center gap-2 disabled:opacity-50"
+          >
+            {adding ? (
+              <>
+                <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                Adding...
+              </>
+            ) : (
+              "Add Update"
+            )}
           </button>
         </form>
 
@@ -177,12 +196,32 @@ export default function ProjectClient({ project }: { project: Project }) {
                                 </button>
 
                                 {/* DELETE */}
-                                <button
-                                  onClick={() => handleDelete(activity.id)}
-                                  className="text-xs bg-red-500/20 text-red-400 px-2 py-1 rounded"
-                                >
-                                  Delete
-                                </button>
+                                {confirmingId === activity.id ? (
+                                  <div className="flex items-center gap-1">
+                                    <button
+                                      onClick={() => {
+                                        handleDelete(activity.id);
+                                        setConfirmingId(null);
+                                      }}
+                                      className="text-xs bg-red-500 text-white px-2 py-1 rounded"
+                                    >
+                                      Confirm
+                                    </button>
+                                    <button
+                                      onClick={() => setConfirmingId(null)}
+                                      className="text-xs bg-zinc-700 text-zinc-300 px-2 py-1 rounded"
+                                    >
+                                      Cancel
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <button
+                                    onClick={() => setConfirmingId(activity.id)}
+                                    className="text-xs bg-red-500/20 text-red-400 px-2 py-1 rounded"
+                                  >
+                                    Delete
+                                  </button>
+                                )}
                               </div>
                             )}
 
